@@ -10,10 +10,9 @@
 """
 
 import time
+import os
 import subprocess
 from uiautomator import Device as d
-
-d = d("b88b8da")
 
 
 class ToastService():
@@ -30,12 +29,17 @@ class ToastService():
         self.tap_item(item_bounds)
         time.sleep(5)
         if self.check_toast_in_events(toast) is True:
-            subprocess.Popen("adb kill-server", shell=True)
+            self.remove_events()
             d.server.start()
             return True
         else:
+            self.remove_events()
             d.server.start()
             return False
+
+    def remove_events(self):
+        subprocess.Popen("adb kill-server", shell=True)
+        os.remove("events.txt")
 
     def check_toast_in_events(self, toast):
         """
