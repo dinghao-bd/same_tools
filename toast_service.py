@@ -4,22 +4,22 @@
 """
 @version: 1
 @author: ding hao
-@license: Apache Licence 
+@mail: 619015618@qq.com
 @file: toast_service.py
 @time: 2016/9/26 16:45
 """
 
-import multiprocessing
 import time
 import subprocess
-from uiautomator import Device
+from uiautomator import Device as d
 
-d = Device("b88b8da")
+d = d("b88b8da")
 
 
 class ToastService():
     """
-    执行命令：adb shell uiautomator events 抓取accessbility 的内容，然后分析内容，取得toast
+    执行命令：adb shell uiautomator events 抓取accessbility 的事件，然后分析内容，取得toast
+    由于events不能和runtests同时运行，所以在运行events时，要先关闭runtests
     """
 
     def check_toast(self, item, toast):
@@ -31,8 +31,6 @@ class ToastService():
         time.sleep(5)
         if self.check_toast_in_events(toast) is True:
             subprocess.Popen("adb kill-server", shell=True)
-            time.sleep(1)
-            subprocess.Popen("adb start-server", shell=True)
             d.server.start()
             return True
         else:
@@ -40,6 +38,11 @@ class ToastService():
             return False
 
     def check_toast_in_events(self, toast):
+        """
+        在events中，查询有没有符合toast的内容
+        :param toast:
+        :return:
+        """
         with open("events.txt", "r") as f:
             contents = f.readlines()
             for content in contents:
@@ -51,29 +54,24 @@ class ToastService():
             return False
 
     def get_bounds(self, item):
+        """
+        获取控件的坐标
+        :param item:
+        :return: 返回控件的坐标
+        """
         bounds_json = item.info["bounds"]
         bounds_x = (bounds_json["left"] + bounds_json["right"]) / 2
         bounds_y = (bounds_json["top"] + bounds_json["bottom"]) / 2
         return bounds_x, bounds_y
 
     def tap_item(self, item_bounds):
+        """
+        点击控件
+        :param item_bounds:
+        :return:
+        """
         tap_cmd = "adb shell input tap %d %d" % item_bounds
-        print tap_cmd
         subprocess.Popen(tap_cmd, shell=True)
 
 
-# toast_service = ToastService()
-
-if __name__ == '__main__':
-    toast_service = ToastService()
-    toast_service.check_toast(d(resourceId="com.zhangyue.iReader.search:id/search_view__head_view__search_icon"),
-                              "您还未输入任何词语，请重新输入")
-
-
-# os.remove('events.txt')
-# child1 = subprocess.Popen('adb shell uiautomator events > events.txt', shell=True)
-# time.sleep(10)
-# child2 = subprocess.Popen('adb kill-server', shell=True)
-# child3 = subprocess.Popen('adb start-server', shell=True)
-#
-# print 111
+toast_service = ToastService()
