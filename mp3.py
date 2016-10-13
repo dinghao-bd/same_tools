@@ -3,7 +3,9 @@
 import mp3play
 import time
 import multiprocessing
+import os
 
+PATH = "F:\music"
 
 class MP3(object):
     def __init__(self, file_path):
@@ -53,9 +55,11 @@ class MP3(object):
     def time_of_song(self):
         return self.seconds
 
+def get_file_list(path):
+    return os.listdir(path)
 
 if __name__ == '__main__':
-    file_path = ["D:\\MP3\\LoveStory.mp3","D:\\MP3\\xiangaihengzao.mp3", "D:\\MP3\\foshuo.mp3", ]
+
     for path in file_path:
         mp3 = MP3(path)
         mp3.run()
