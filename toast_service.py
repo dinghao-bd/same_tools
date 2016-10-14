@@ -38,8 +38,18 @@ class ToastService():
             return False
 
     def remove_events(self):
+        # TODO: 查询adb是否会有多个进程，然后根据进程ID进行kill，避免误杀
         subprocess.Popen("adb kill-server", shell=True)
         os.remove("events.txt")
+
+    def get_pid(self, name):
+        cmd = "ps aux | grep '%s' " % name
+        child1 = subprocess.Popen(cmd, shell=True)
+        info = child1.stdout.split()
+        if len(info) > 1:
+            return info[1]
+        else:
+            return -1
 
     def check_toast_in_events(self, toast):
         """
@@ -78,4 +88,7 @@ class ToastService():
         subprocess.Popen(tap_cmd, shell=True)
 
 
-toast_service = ToastService()
+# toast_service = ToastService()
+if __name__ == '__main__':
+    toast_service = ToastService()
+    toast_service.get_pid("chrome")
