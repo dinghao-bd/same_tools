@@ -1,13 +1,14 @@
 # coding:utf8
-
 import mp3play
 import time
 import multiprocessing
 import os
+from eyed3.id3 import Tag
+import eyed3
 
-# PATH = "F:\music"
-PATH = "d:\mp3"
-BACKUP_PATH = "d:\mp3_backup"
+PATH = "F:\\music1"
+# PATH = "d:\mp3"
+BACKUP_PATH = os.path.join(PATH, "backup")
 
 
 class MP3(object):
@@ -15,34 +16,41 @@ class MP3(object):
 
         self.file_path = file_path
         self.fd = open(file_path)
+        self.eyed3 = eyed3.load(self.file_path)
         if self.is_id3():
             self.parser_mp3()
-            self.seconds = mp3play.load(self.file_path).seconds()
+            self.mp3 = mp3play.load(self.file_path)
         else:
-            self.seconds = mp3play.load(self.file_path).seconds()
+            self.mp3 = mp3play.load(self.file_path)
 
     def play(self):
         """
         播放音频文件
         :return:
         """
-        mp3 = mp3play.load(self.file_path)
-        mp3.play()
-        sleep_time = min(1800, mp3.seconds())
+        self.mp3.play()
+        sleep_time = min(1800, self.mp3.seconds())
         time.sleep(sleep_time + 3)
-        mp3.stop()
+        self.mp3.stop()
+        # close = multiprocessing.Process(target=self.close())
+        # close.start()
+        # close.join()
+
+    # def close(self):
+    #     time.sleep(10)
+    #     self.fd.close()
 
     def play_time(self):
         """
         返回播放时间
         :return:
         """
-        for i in xrange(self.seconds):
+        for i in xrange(self.mp3.seconds):
             self.return_time(i)
             time.sleep(1)
 
     def return_time(self, time):
-        print "当前时间：%s，总时间：%s" % (time, self.seconds)
+        print "当前时间：%s，总时间：%s" % (time, self.mp3.seconds)
 
     def run(self):
         jobs = []
@@ -51,6 +59,7 @@ class MP3(object):
         jobs.append(player)
         jobs.append(print_play_time)
         for job in jobs:
+            print job
             job.start()
         for job in jobs:
             job.join()
@@ -58,12 +67,12 @@ class MP3(object):
     def stop(self):
         pass
 
-    def parser_mp3(self):
+    def next_song(self):
         pass
-        # 备份文件，还有需要去掉head部分
-        os.rename(self.file_path, self.file_path.replace(PATH, BACKUP_PATH))
 
-        file = open(self.file_path)
+    def parser_mp3(self):
+        tag = Tag()
+        tag.remove(self.file_path)
 
     def is_id3(self):
         self.fd.seek(0)
@@ -73,19 +82,14 @@ class MP3(object):
         else:
             return False
 
-    def get_id3_ver2_size(self):
-        length = 4
-        self.fd.seek(6, os.SEEK_SET)
-        size = self.fd.read(length)
-        total_size = (ord(size[0]) & 0x7f) * 0x2000000 + (ord(size[1]) & 0x7f) * 0x40000 + \
-                     (ord(size[2]) & 0x7f) * 0x80 + ord(size[3]) & 0x7f
-        return total_size
+    def get_name(self):
+        pass
 
     def get_pid(self):
         pass
 
     def time_of_song(self):
-        return self.seconds
+        return self.mp3.seconds
 
 
 def get_file_list(path):
@@ -97,12 +101,23 @@ def get_file_list(path):
 
 
 def is_mp3(file_path):
-    return os.path.splitext(file_path)[-1] == "mp3"
+    return os.path.splitext(file_path)[-1] == ".mp3"
 
 
 if __name__ == '__main__':
-
+    mp3_list = []
     for path in get_file_list(PATH):
         if is_mp3(path):
+            # mp3_list.append(path)
             mp3 = MP3(path)
-            # mp3.run()
+            mp3.run()
+
+    # mp3 = MP3(mp3_list)
+
+    # print "1：播放歌曲，2：暂停，3：下一曲，4：停止"
+    # numb = int(raw_input("请输入指令："))
+    # while True:
+    #     if numb is 1:
+    #         mp3.run()
+    #     if numb is 2:
+    #         pass
