@@ -33,13 +33,13 @@ class MP3(object):
         sleep_time = min(1800, mp3.seconds())
         time.sleep(sleep_time + 3)
         mp3.stop()
-        # close = multiprocessing.Process(target=self.close())
-        # close.start()
-        # close.join()
+        close = multiprocessing.Process(target=self.close())
+        close.start()
+        close.join()
 
-    # def close(self):
-    #     time.sleep(10)
-    #     self.fd.close()
+    def close(self):
+        time.sleep(10)
+        self.fd.close()
 
     def play_time(self):
         """
