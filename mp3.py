@@ -5,11 +5,6 @@ import time
 import multiprocessing
 import os
 from eyed3.id3 import Tag
-import eyed3
-
-# PATH = "F:\music"
-PATH = "d:\mp3"
-BACKUP_PATH = "d:\mp3_backup"
 
 
 class MP3(object):
@@ -33,13 +28,15 @@ class MP3(object):
         sleep_time = min(1800, mp3.seconds())
         time.sleep(sleep_time + 3)
         mp3.stop()
-        close = multiprocessing.Process(target=self.close())
-        close.start()
-        close.join()
+        self.close()
 
     def close(self):
-        time.sleep(10)
-        self.fd.close()
+        """
+        关闭打开的文件
+        :return:
+        """
+        if not self.fd.closed:
+            self.fd.close()
 
     def play_time(self):
         """
@@ -51,7 +48,12 @@ class MP3(object):
             time.sleep(1)
 
     def return_time(self, time):
-        print "当前时间：%s，总时间：%s" % (time, self.seconds)
+        """
+        返回播放时间
+        :param time:
+        :return:
+        """
+        return "当前时间：%s，总时间：%s" % (time, self.seconds)
 
     def run(self):
         jobs = []
@@ -64,17 +66,19 @@ class MP3(object):
         for job in jobs:
             job.join()
 
-    def stop(self):
-        pass
-
-    def next_song(self):
-        pass
-
     def parser_mp3(self):
+        """
+        处理mp3的head部分
+        :return:
+        """
         tag = Tag()
         tag.remove(self.file_path)
 
     def is_id3(self):
+        """
+        判断是不是新的head，也就是MP3 v2 id3
+        :return:
+        """
         self.fd.seek(0)
         head = self.fd.read(3)
         if head == "ID3":
@@ -82,17 +86,13 @@ class MP3(object):
         else:
             return False
 
-    def get_name(self):
-        pass
-
-    def get_pid(self):
-        pass
-
-    def time_of_song(self):
-        return self.seconds
-
 
 def get_file_list(path):
+    """
+    获取文件夹中的文件路径列表
+    :param path:
+    :return:
+    """
     file_path = []
     for dir_path, dir_name, file_names in os.walk(path):
         for file_name in file_names:
@@ -101,23 +101,18 @@ def get_file_list(path):
 
 
 def is_mp3(file_path):
+    """
+    根据后缀名判断是不是mp3文件
+    :param file_path:
+    :return:
+    """
     return os.path.splitext(file_path)[-1] == ".mp3"
 
 
 if __name__ == '__main__':
-
+    PATH = ""
     for path in get_file_list(PATH):
         print path
         if is_mp3(path):
             mp3 = MP3(path)
             mp3.run()
-
-    # mp3 = MP3(mp3_list)
-
-    # print "1：播放歌曲，2：暂停，3：下一曲，4：停止"
-    # numb = int(raw_input("请输入指令："))
-    # while True:
-    #     if numb is 1:
-    #         mp3.run()
-    #     if numb is 2:
-    #         pass
