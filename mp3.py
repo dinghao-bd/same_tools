@@ -1,4 +1,5 @@
 # coding:utf8
+
 import mp3play
 import time
 import multiprocessing
@@ -6,9 +7,9 @@ import os
 from eyed3.id3 import Tag
 import eyed3
 
-PATH = "F:\\music1"
-# PATH = "d:\mp3"
-BACKUP_PATH = os.path.join(PATH, "backup")
+# PATH = "F:\music"
+PATH = "d:\mp3"
+BACKUP_PATH = "d:\mp3_backup"
 
 
 class MP3(object):
@@ -16,22 +17,22 @@ class MP3(object):
 
         self.file_path = file_path
         self.fd = open(file_path)
-        self.eyed3 = eyed3.load(self.file_path)
         if self.is_id3():
             self.parser_mp3()
-            self.mp3 = mp3play.load(self.file_path)
+            self.seconds = mp3play.load(self.file_path).seconds()
         else:
-            self.mp3 = mp3play.load(self.file_path)
+            self.seconds = mp3play.load(self.file_path).seconds()
 
     def play(self):
         """
         播放音频文件
         :return:
         """
-        self.mp3.play()
-        sleep_time = min(1800, self.mp3.seconds())
+        mp3 = mp3play.load(self.file_path)
+        mp3.play()
+        sleep_time = min(1800, mp3.seconds())
         time.sleep(sleep_time + 3)
-        self.mp3.stop()
+        mp3.stop()
         # close = multiprocessing.Process(target=self.close())
         # close.start()
         # close.join()
@@ -45,12 +46,12 @@ class MP3(object):
         返回播放时间
         :return:
         """
-        for i in xrange(self.mp3.seconds):
+        for i in xrange(self.seconds):
             self.return_time(i)
             time.sleep(1)
 
     def return_time(self, time):
-        print "当前时间：%s，总时间：%s" % (time, self.mp3.seconds)
+        print "当前时间：%s，总时间：%s" % (time, self.seconds)
 
     def run(self):
         jobs = []
@@ -59,7 +60,6 @@ class MP3(object):
         jobs.append(player)
         jobs.append(print_play_time)
         for job in jobs:
-            print job
             job.start()
         for job in jobs:
             job.join()
@@ -89,7 +89,7 @@ class MP3(object):
         pass
 
     def time_of_song(self):
-        return self.mp3.seconds
+        return self.seconds
 
 
 def get_file_list(path):
@@ -105,10 +105,10 @@ def is_mp3(file_path):
 
 
 if __name__ == '__main__':
-    mp3_list = []
+
     for path in get_file_list(PATH):
+        print path
         if is_mp3(path):
-            # mp3_list.append(path)
             mp3 = MP3(path)
             mp3.run()
 
